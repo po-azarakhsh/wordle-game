@@ -11,6 +11,7 @@ num_of_letter = "num_of_letters"
 level_val = "game_level"
 current_row = "current_row"
 game_over = "game_over"
+game_win = "game_win"
 
 target_word = "AGAIN"
 
@@ -28,7 +29,8 @@ defaults = {
     num_of_letter: None,
     level_val: None,
     current_row: 0,
-    game_over: False
+    game_over: False,
+    game_win: False
 }
 
 for k, v in defaults.items():
@@ -79,10 +81,9 @@ with st.expander("Game Configuration", expanded=not st.session_state[config_lock
 
 # Use the config when locked
 if st.session_state[config_locked]:
-    st.write(type(st.session_state[num_key].split('-')[0]))
     # --- Game session state ---
     number_of_letters = int(st.session_state[num_key].split('-')[0])
-    number_of_guess = st.session_state[game_levels[st.session_state[level_key]]]
+    number_of_guess = game_levels[st.session_state[level_key]]
     if "guesses" not in st.session_state:
         st.session_state.guesses = [["" for _ in range(number_of_letters)] for _ in range(number_of_guess)]
     if "colors" not in st.session_state:
@@ -103,8 +104,7 @@ if st.session_state[config_locked]:
                             st.session_state.colors[row][i] = get_color(i, ch)
 
                         if guess_value == target_word:
-                            st.success("🎉 Correct!")
-                            st.session_state.game_over = True
+                            st.session_state.win = True
                         else:
                             st.session_state.current_row += 1
                             if st.session_state.current_row == number_of_guess:
@@ -130,12 +130,18 @@ if st.session_state[config_locked]:
                 )
             st.markdown("<br>", unsafe_allow_html=True)
 
+if st.session_state.game_over:
+    st.error(f"Game over! The word was: {target_word}")
 
+if st.session_state.game_win:
+    st.session_state[config_locked] = False
+    st.success("🎉 Correct!")
+    st.balloons()
 
 # Restart: clear widget keys and logical state, then rerun
 col1, col2, col3, col4 = st.columns(4)
 with col4:
-    if st.button("🔄 Restart Game") or st.session_state.game_over:
+    if st.button("🔄 Restart Game"):
         st.session_state[config_locked] = False
         st.session_state[num_of_letter] = None
         st.session_state[level_val] = None
@@ -144,3 +150,5 @@ with col4:
         st.session_state[game_over] = False
         st.session_state[current_row] = 0
         st.rerun()
+
+
