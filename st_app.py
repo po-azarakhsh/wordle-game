@@ -57,7 +57,7 @@ def get_color(idx, letter):
 
 
 # Expander — collapsed/expanded based on lock state
-with st.expander("Game Configuration", expanded=not st.session_state[config_locked]):
+with st.expander("Configure Your Game", expanded=not st.session_state[config_locked]):
     col1, col2 = st.columns(2)
     with col1:
         st.selectbox(
@@ -78,7 +78,6 @@ with st.expander("Game Configuration", expanded=not st.session_state[config_lock
         
 
 
-
 # Use the config when locked
 if st.session_state[config_locked]:
     # --- Game session state ---
@@ -89,9 +88,15 @@ if st.session_state[config_locked]:
     if "colors" not in st.session_state:
         st.session_state.colors = [["#FFFFFF" for _ in range(number_of_letters)] for _ in range(number_of_guess)]
         
-    with st.expander("Playing the Game ...", expanded=True):
+    with st.expander(
+        "Play The Game",
+        expanded=not (st.session_state.game_over or st.session_state.game_win)
+    ):
         # --- Input Form ---
-        if not st.session_state.game_over and st.session_state.current_row < number_of_guess:
+        if (
+            (not st.session_state.game_over and not st.session_state.game_win)
+            and st.session_state.current_row < number_of_guess
+        ):
             row = st.session_state.current_row
             with st.form(key=f"form_{row}", clear_on_submit=True):
                 guess = st.text_input(f"Guess #{row+1}", max_chars=5).upper()
@@ -104,10 +109,12 @@ if st.session_state[config_locked]:
                             st.session_state.colors[row][i] = get_color(i, ch)
 
                         if guess_value == target_word:
-                            st.session_state.win = True
+                            st.session_state.game_win = True
+                            st.session_state.game_over = True
                         else:
                             st.session_state.current_row += 1
                             if st.session_state.current_row == number_of_guess:
+                                st.session_state.game_over = True
                                 st.error(f"Game Over! The word was **{target_word}**.")
                         # ✅ Force a rerun so the next row input appears immediately
                             st.rerun()
@@ -130,8 +137,16 @@ if st.session_state[config_locked]:
                 )
             st.markdown("<br>", unsafe_allow_html=True)
 
+
 if st.session_state.game_over:
-    st.error(f"Game over! The word was: {target_word}")
+    if not st.session_state.game_win:
+        st.error(
+            f"""
+                Game over!\n
+                The word was: {target_word}!\n
+                Please reset the game.
+            """
+            )
 
 if st.session_state.game_win:
     st.session_state[config_locked] = False
@@ -142,13 +157,7 @@ if st.session_state.game_win:
 col1, col2, col3, col4 = st.columns(4)
 with col4:
     if st.button("🔄 Restart Game"):
-        st.session_state[config_locked] = False
-        st.session_state[num_of_letter] = None
-        st.session_state[level_val] = None
-        st.session_state[num_key] = "Select..."
-        st.session_state[level_key] = "Select..."
-        st.session_state[game_over] = False
-        st.session_state[current_row] = 0
+        st.session_state.clear()
         st.rerun()
 
 
