@@ -1,6 +1,7 @@
 import streamlit as st
 
 # --- Local utilities ---
+from src.utils.call_llama import call_llama_func
 from src.utils.aux_funcs import get_color, word_selection
 from src.utils.constants import (
     defaults,
@@ -12,6 +13,7 @@ from src.utils.constants import (
     config_locked,
     examples_html
 )
+
 
 # ---------------------- #
 #  Streamlit Page Config #
@@ -35,7 +37,7 @@ st.subheader("Get chances to guess a word.")
 # ---------------------- #
 st.sidebar.header("📖 Examples")
 # HTML snippet with sample gameplay demonstration
-st.sidebar.markdown(examples_html, unsafe_allow_html=True)
+st.sidebar.markdown(examples_html, unsafe_allow_html=True) 
 
 # ---------------------- #
 #  Initialize Session    #
