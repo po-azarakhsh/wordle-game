@@ -14,6 +14,7 @@ from src.utils.constants import (
     examples_html
 )
 
+model = "llama3.2"
 
 # ---------------------- #
 #  Streamlit Page Config #
@@ -32,12 +33,6 @@ st.set_page_config(
 st.header(":zap: Wordle")
 st.subheader("Get chances to guess a word.")
 
-# ---------------------- #
-#   Sidebar Game Guide   #
-# ---------------------- #
-st.sidebar.header("📖 Examples")
-# HTML snippet with sample gameplay demonstration
-st.sidebar.markdown(examples_html, unsafe_allow_html=True) 
 
 # ---------------------- #
 #  Initialize Session    #
@@ -63,6 +58,56 @@ def _maybe_lock() -> None:
         st.session_state[level_val] = st.session_state[level_key]
         st.session_state[config_locked] = True
 
+
+# ---------------------- #
+#   Sidebar Game Guide   #
+# ---------------------- #
+st.sidebar.header("📖 Examples")
+# HTML snippet with sample gameplay demonstration
+st.sidebar.markdown(examples_html, unsafe_allow_html=True)
+
+
+# ---------------------- #
+#   Sidebar Chatbot      #
+# ---------------------- #
+st.sidebar.header("ℹ️ AI Assistant")
+st.sidebar.write(f'Powered by 🦙 {model}!')
+
+# Chat history container
+chat_container = st.sidebar.container(height=300)
+
+# Display existing messages
+with chat_container:
+    for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
+
+# Chat input
+if prompt := st.sidebar.chat_input("Say something..."):
+    # Add user message to session state
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    
+    # Display user message immediately
+    with chat_container:
+        st.chat_message("user").write(prompt)
+    
+    # Stream assistant response
+    assistant_msg = ''
+    assistant_placeholder = chat_container.empty()
+    
+    with st.sidebar:
+        with st.spinner("🤖 Generating answer ..."):
+            for chunk in call_llama_func(
+                model, 
+                prompt, 
+                stream=True,
+                messages=st.session_state.messages[:-1]
+            ):
+                assistant_msg += chunk
+                with assistant_placeholder.container():
+                    st.chat_message("assistant").write(assistant_msg)
+    
+    # Save assistant message to session state
+    st.session_state.messages.append({"role": "assistant", "content": assistant_msg})
 
 # ---------------------- #
 #   Game Configuration   #
@@ -214,4 +259,5 @@ if st.session_state.game_win and not st.session_state.balloons_shown:
 # returning to the configuration screen.
 if st.button("🔄 Restart"):
     st.session_state.clear()
+    st.session_state.messages = []
     st.rerun()

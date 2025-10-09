@@ -9,6 +9,7 @@ game_win = "game_win"
 game_start = "game_start"
 word_selected = ""
 balloons_shown = "balloons_shown"
+messages = "messages"
 
 
 game_levels = {
@@ -29,7 +30,8 @@ defaults = {
     game_win: False,
     game_start: False,
     word_selected: '',
-    balloons_shown: False
+    balloons_shown: False,
+    messages: [],
 }
 
 examples_html = """

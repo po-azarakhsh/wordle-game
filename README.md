@@ -34,8 +34,19 @@ Players configure the **word length** and **difficulty level**, then attempt to 
 ```bash
 pip install -r requirements.txt
 ```
-## 🚀 Versions
-- [X] Version 1.0:
-    - The Simple Wordle Game
-- [ ] Version 2.0:
-    - It will be featured with AI chatbot to guide the user
+## 🚀 AI Assistant
+
+The current version uses open-source LLM model **Llama3.2** to power the AI assistant in the sidebar.
+
+In order to switch to a different model, simply change the `model` variable in `st_app.py`:
+
+```python
+model = "llama3.2"  # Change to your desired model name
+```
+But, before switching, ensure that the model is compatible with the `call_llama_func` function in `llama_utils.py`.
+### Installation of Llama3.2
+You can use the following command to install Llama3.2:
+
+1. Go to the [llama GitHub repository](https://github.com/ollama/ollama)
+2. Follow the installation instructions provided in the repository to set up Llama3.2 on your local machine.
+3. You can install any other model by following the same steps, then customizing the `model` variable in `st_app.py`.
